@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check the tag matches the version in pesde.toml and src/init.luau
+        run: |
+          version="$(sed -n 's/^version = "\(.*\)"$/\1/p' pesde.toml | head -1)"
+          declared="$(sed -n 's/.*:setVersion("\(.*\)").*/\1/p' src/init.luau | head -1)"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ] || [ "${declared}" != "${version}" ]; then
+            echo "release tag ${GITHUB_REF_NAME}, pesde.toml ${version} and src/init.luau ${declared} must agree" >&2
+            exit 1
+          fi
+      - name: Install tooling
+        uses: CompeyDev/setup-rokit@v0.1.0
+        with:
+          cache: true
+      - name: Install pesde
+        uses: lumin-org/setup-pesde@v0.4.1
+        with:
+          cache: true
+          version: v0.7.3+registry.0.2.3
+      - name: Set up zune typedefs
+        run: zune setup
+      - name: Install dependencies
+        run: pesde install
+      - name: Format, lint, typecheck, checks
+        run: scripts/check.sh
+      - name: Build
+        run: scripts/build.sh
+      - name: Name the assets
+        run: |
+          mv build/studio-themer "build/studio-themer-${GITHUB_REF_NAME}-linux-x86_64"
+          mv build/studio-themer.exe "build/studio-themer-${GITHUB_REF_NAME}-windows-x86_64.exe"
+          mv build/studio-themer.luau "build/studio-themer-${GITHUB_REF_NAME}.luau"
+      - name: Attach the binaries to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" \
+            "build/studio-themer-${GITHUB_REF_NAME}-linux-x86_64" \
+            "build/studio-themer-${GITHUB_REF_NAME}-windows-x86_64.exe" \
+            "build/studio-themer-${GITHUB_REF_NAME}.luau" \
+            --clobber

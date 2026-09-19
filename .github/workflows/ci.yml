@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install tooling
+        uses: CompeyDev/setup-rokit@v0.1.0
+        with:
+          cache: true
+      - name: Install pesde
+        uses: lumin-org/setup-pesde@v0.4.1
+        with:
+          cache: true
+          version: v0.7.3+registry.0.2.3
+      - name: Set up zune typedefs
+        run: zune setup
+      - name: Install dependencies
+        run: pesde install
+      - name: Format, lint, typecheck, checks
+        run: scripts/check.sh
+      - name: Build
+        run: scripts/build.sh
+      - name: Smoke test the Linux binary
+        run: |
+          build/studio-themer themes
+          build/studio-themer --version
