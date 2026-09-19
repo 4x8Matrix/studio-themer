@@ -187,9 +187,10 @@ end
 
 function progress.confirm(question: string, defaultYes: boolean): boolean
 	local hint = if defaultYes then "[Y/n]" else "[y/N]"
+	stopSpinner()
 	StdPolyfills.stdio.write(`{paint(BOLD .. BLUE, "::")} {paint(BOLD, question)} {hint} `)
 
-	local ok, answer = pcall(StdPolyfills.stdio.prompt)
+	local ok, answer = pcall(StdPolyfills.io.stdinRead)
 	local trimmed = string.lower((string.gsub(if ok then tostring(answer) else "", "^%s*(.-)%s*$", "%1")))
 
 	if trimmed == "" then
