@@ -15,13 +15,17 @@ end
 local function formatStatus(report: pipeline.StatusReport): string
 	local lines = {}
 	local applied = report.lastApplied
+	local missingNote = if report.qtPresent then "" else "  (files missing)"
 
 	table.insert(lines, `version   : {report.version}`)
 
 	if applied then
 		table.insert(
 			lines,
-			`applied   : {applied.spec} on {applied.version} at {os.date("%Y-%m-%d %H:%M", applied.appliedAt)}`
+			`applied   : {applied.spec} ({applied.mode}) on {applied.version} at {os.date(
+				"%Y-%m-%d %H:%M",
+				applied.appliedAt
+			)}`
 		)
 	else
 		table.insert(lines, "applied   : nothing recorded")
@@ -49,9 +53,11 @@ local function formatStatus(report: pipeline.StatusReport): string
 	)
 	table.insert(
 		lines,
-		`qt theme  : {mark(report.qtPresent and report.qtSpec)}{report.qtSpec or "none"}{if report.qtPresent
-			then "  (Dark+Light present)"
-			else "  (files missing)"}`
+		`qt dark   : {mark(report.qtPresent and report.qtDarkSpec)}{report.qtDarkSpec or "stock"}{missingNote}`
+	)
+	table.insert(
+		lines,
+		`qt light  : {mark(report.qtPresent and report.qtLightSpec)}{report.qtLightSpec or "stock"}{missingNote}`
 	)
 	table.insert(
 		lines,
@@ -59,7 +65,9 @@ local function formatStatus(report: pipeline.StatusReport): string
 	)
 	table.insert(
 		lines,
-		`plugins   : {mark(report.pluginsPristine == report.pluginsTotal and report.pluginsTotal > 0)}{report.pluginsPristine}/{report.pluginsTotal} plugins with a pristine copy`
+		`plugins   : {mark(report.pluginsPristine == report.pluginsTotal and report.pluginsTotal > 0)}{report.pluginsPristine}/{report.pluginsTotal} plugins with a pristine copy{if applied
+			then ` ({applied.spec})`
+			else ""}`
 	)
 	table.insert(lines, "\nOn-disk state only. Changes take effect after a FULL Studio restart.")
 

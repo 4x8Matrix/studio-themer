@@ -40,6 +40,7 @@ end
 export type State = {
 	version: string,
 	spec: string,
+	mode: string,
 	appliedAt: number,
 }
 

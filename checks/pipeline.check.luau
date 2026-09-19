@@ -33,6 +33,7 @@ end
 
 local steps = {}
 local report = pipeline.apply("mocha", location, {
+	mode = "both",
 	dryRun = true,
 	report = function(step)
 		table.insert(steps, step)
@@ -40,7 +41,10 @@ local report = pipeline.apply("mocha", location, {
 })
 
 assert(report, "dry-run apply returns a report")
-assert(report.dryRun and report.spec == "mocha" and report.version == location.version, "report echoes the run")
+assert(
+	report.dryRun and report.spec == "mocha" and report.mode == "both" and report.version == location.version,
+	"report echoes the run"
+)
 assert(not report.exe.written, "dry run never writes the exe")
 assert(report.tokens.files > 0 and report.plugins.themed > 0, "layers ran")
 
@@ -65,6 +69,7 @@ assert(
 assert(steps[#steps].progress == 1, "last step is complete")
 
 local missing, missingError = pipeline.apply("nope", location, {
+	mode = "both",
 	dryRun = true,
 	report = function() end,
 })

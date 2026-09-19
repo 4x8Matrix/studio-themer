@@ -1,12 +1,13 @@
 --> Layer 3, the on-disk Foundation tokens: the RbxDesignFoundations and Foundation .lua palettes that Studio's
 --> engine-rendered surfaces (Start Page, toasts, newer panels) read. Plain text, so every Color3 literal is
---> rewritten through the mapper. Both polarity files receive the theme, sourced from the file whose polarity
---> matches it, and always from the pristine copy so a re-apply never compounds.
+--> rewritten through the mapper. The slot files the mode selects receive the theme, sourced from the pristine file
+--> whose polarity matches the theme, so a re-apply never compounds and the other slot is left as it was.
 
 local StdPolyfills = require("../../luau_packages/std_polyfills")
 
 local color = require("../theme/color")
 local mapper = require("../theme/mapper")
+local mode = require("../theme/mode")
 local backup = require("../studio/backup")
 
 local INDEX_SUBDIR = "ExtraContent/LuaPackages/Packages/_Index"
@@ -142,9 +143,24 @@ function tokens.convert(text: string, themeMapper: mapper.Mapper): (string, numb
 	return rewritten, count
 end
 
-function tokens.apply(versionDir: string, spec: string, themeMapper: mapper.Mapper, dryRun: boolean): Report
+function tokens.apply(
+	versionDir: string,
+	spec: string,
+	themeMapper: mapper.Mapper,
+	slots: mode.Mode,
+	dryRun: boolean
+): Report
 	local report: Report = { files = 0, literals = 0 }
 	local sourceIsLight = mapper.isLight(spec)
+	local targets = {}
+
+	if mode.includesDark(slots) then
+		table.insert(targets, "dark")
+	end
+
+	if mode.includesLight(slots) then
+		table.insert(targets, "light")
+	end
 
 	for _, pair in tokens.findPackages(versionDir) do
 		local pristineDark, pristineLight
@@ -160,13 +176,14 @@ function tokens.apply(versionDir: string, spec: string, themeMapper: mapper.Mapp
 		local source = StdPolyfills.fileSystem.readFile(if sourceIsLight then pristineLight else pristineDark)
 		local themed, literals = tokens.convert(source, themeMapper)
 
-		if not dryRun then
-			StdPolyfills.fileSystem.writeFile(pair.dark, themed)
-			StdPolyfills.fileSystem.writeFile(pair.light, themed)
-		end
+		for _, target in targets do
+			if not dryRun then
+				StdPolyfills.fileSystem.writeFile(pair[target], themed)
+			end
 
-		report.files += 2
-		report.literals += literals
+			report.files += 1
+			report.literals += literals
+		end
 	end
 
 	return report

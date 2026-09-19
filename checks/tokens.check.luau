@@ -64,4 +64,16 @@ assert(compared > 0, "at least one pristine token pair was compared")
 local pristineCount, total = tokens.countPristine(location.versionDir)
 assert(pristineCount == compared and total == #pairs * 2, `pristine {pristineCount}/{total}, compared {compared}`)
 
+local bothReport = tokens.apply(location.versionDir, "mocha", mocha, "both", true)
+local darkReport = tokens.apply(location.versionDir, "mocha", mocha, "dark", true)
+local lightReport = tokens.apply(location.versionDir, "mocha", mocha, "light", true)
+assert(
+	bothReport.files == #pairs * 2 and darkReport.files == #pairs and lightReport.files == #pairs,
+	"mode selects the slot files"
+)
+assert(
+	darkReport.literals == lightReport.literals and bothReport.literals == darkReport.literals * 2,
+	"literal counts follow the files"
+)
+
 print(`tokens: pass ({compared} files, {literals} literals, {string.format("%.1f", os.clock() - started)}s)`)

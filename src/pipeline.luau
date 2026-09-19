@@ -14,6 +14,7 @@ local backup = require("./studio/backup")
 local locate = require("./studio/locate")
 local state = require("./studio/state")
 local mapper = require("./theme/mapper")
+local mode = require("./theme/mode")
 
 local STEP_COUNT = 5
 local PLUGIN_PROGRESS_START = 0.45
@@ -40,6 +41,7 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 
 	local report = options.report
 	local dryRun = options.dryRun
+	local slots: mode.Mode = options.mode
 
 	report({ index = 1, total = STEP_COUNT, name = "bypass", detail = "locating plugin verify gates", progress = 0.02 })
 
@@ -81,25 +83,43 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 	})
 	report({ index = 3, total = STEP_COUNT, name = "qt-theme", detail = "building Foundation themes", progress = 0.26 })
 
-	local built =
-		qtTheme.build(spec, assets.read(qtTheme.FILE_NAMES.dark), assets.read(qtTheme.FILE_NAMES.light), themeMapper)
+	local baseDark = assets.read(qtTheme.FILE_NAMES.dark)
+	local baseLight = assets.read(qtTheme.FILE_NAMES.light)
+	local built = qtTheme.build(spec, baseDark, baseLight, themeMapper, slots)
+	local qtWritten = 0
+	local qtStocked = 0
 
-	if not dryRun then
-		StdPolyfills.fileSystem.writeDir(location.themesDir)
-		StdPolyfills.fileSystem.writeFile(`{location.themesDir}/{qtTheme.FILE_NAMES.dark}`, built.dark)
-		StdPolyfills.fileSystem.writeFile(`{location.themesDir}/{qtTheme.FILE_NAMES.light}`, built.light)
+	for slot, fileName in qtTheme.FILE_NAMES do
+		local path = `{location.themesDir}/{fileName}`
+		local themed = built[slot]
+
+		if themed then
+			qtWritten += 1
+
+			if not dryRun then
+				StdPolyfills.fileSystem.writeDir(location.themesDir)
+				StdPolyfills.fileSystem.writeFile(path, themed)
+			end
+		elseif not StdPolyfills.fileSystem.isFile(path) then
+			qtStocked += 1
+
+			if not dryRun then
+				StdPolyfills.fileSystem.writeDir(location.themesDir)
+				StdPolyfills.fileSystem.writeFile(path, if slot == "dark" then baseDark else baseLight)
+			end
+		end
 	end
 
 	report({
 		index = 3,
 		total = STEP_COUNT,
 		name = "qt-theme",
-		detail = `2 files -> {location.themesDir}`,
+		detail = `{qtWritten} themed{if qtStocked > 0 then `, {qtStocked} stock` else ""} -> {location.themesDir}`,
 		progress = 0.34,
 	})
 	report({ index = 4, total = STEP_COUNT, name = "tokens", detail = "rewriting Foundation palettes", progress = 0.36 })
 
-	local tokenReport = tokens.apply(location.versionDir, spec, themeMapper, dryRun)
+	local tokenReport = tokens.apply(location.versionDir, spec, themeMapper, slots, dryRun)
 
 	report({
 		index = 4,
@@ -132,13 +152,14 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 	})
 
 	if not dryRun then
-		state.write({ version = location.version, spec = spec, appliedAt = os.time() })
+		state.write({ version = location.version, spec = spec, mode = slots, appliedAt = os.time() })
 	end
 
 	report({ index = STEP_COUNT, total = STEP_COUNT, name = "done", detail = spec, progress = 1 })
 
 	return {
 		spec = spec,
+		mode = slots,
 		version = location.version,
 		dryRun = dryRun,
 		exe = {
@@ -158,6 +179,7 @@ function pipeline.status(location: locate.Location): StatusReport
 	local redirect = qtRedirect.check(exe)
 	local lastApplied = state.read()
 	local darkTheme = readThemesFile(location, qtTheme.FILE_NAMES.dark)
+	local lightTheme = readThemesFile(location, qtTheme.FILE_NAMES.light)
 	local tokensPristine, tokensTotal = tokens.countPristine(location.versionDir)
 	local pluginsPristine, pluginsTotal = plugins.countPristine(location.pluginDir)
 
@@ -170,8 +192,9 @@ function pipeline.status(location: locate.Location): StatusReport
 		bypassError = bypassError,
 		redirectStock = #redirect.stock,
 		redirectRedirected = #redirect.redirected,
-		qtSpec = if darkTheme then qtTheme.readSpec(darkTheme) else nil,
-		qtPresent = if darkTheme and readThemesFile(location, qtTheme.FILE_NAMES.light) then true else false,
+		qtDarkSpec = if darkTheme then qtTheme.readSpec(darkTheme) else nil,
+		qtLightSpec = if lightTheme then qtTheme.readSpec(lightTheme) else nil,
+		qtPresent = if darkTheme and lightTheme then true else false,
 		tokensPristine = tokensPristine,
 		tokensTotal = tokensTotal,
 		pluginsPristine = pluginsPristine,
@@ -198,12 +221,14 @@ export type Step = {
 }
 
 export type ApplyOptions = {
+	mode: mode.Mode,
 	dryRun: boolean,
 	report: (step: Step) -> (),
 }
 
 export type ApplyReport = {
 	spec: string,
+	mode: mode.Mode,
 	version: string,
 	dryRun: boolean,
 	exe: {
@@ -225,7 +250,8 @@ export type StatusReport = {
 	bypassError: string?,
 	redirectStock: number,
 	redirectRedirected: number,
-	qtSpec: string?,
+	qtDarkSpec: string?,
+	qtLightSpec: string?,
 	qtPresent: boolean,
 	tokensPristine: number,
 	tokensTotal: number,

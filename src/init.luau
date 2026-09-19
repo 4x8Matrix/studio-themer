@@ -35,7 +35,7 @@ local app = cli.new()
 		end
 	end)
 	:setCallback(function()
-		wizard()
+		wizard.run()
 	end)
 	:addCommand(applyCommand)
 	:addCommand(statusCommand)
