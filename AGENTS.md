@@ -1,6 +1,6 @@
 # studio-themer
 
-One Zune executable that themes every layer of Roblox Studio (exe patches, Qt theme JSON, on-disk Foundation tokens, built-in plugin bytecode) on Windows and Linux/Wine, with pacman-style progress output. A Luau port of `~/Projects/Personal/studio-catppuccin` (Python). Design: `docs/specs/2026-09-19-studio-themer.md`. Plan: `docs/plans/2026-09-19-studio-themer.md`.
+One Zune executable that themes every layer of Roblox Studio (exe patches, Qt theme JSON, on-disk Foundation tokens, built-in plugin bytecode) on Windows and Linux/Wine, with pacman-style progress output. A Luau port of the Python studio-catppuccin scripts.
 
 ## Paradigms
 
