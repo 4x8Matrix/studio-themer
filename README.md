@@ -1,28 +1,18 @@
-# studio-themer
+# Studio Themer
 
-Themes every layer of Roblox Studio (Windows, and Linux under Wine/Vinegar): the script editor and Qt chrome, the modern Explorer, Properties, Ribbon and Footer, the Start Page and toasts. Sixteen themes ship: Catppuccin's four flavours, Dracula, Nord, Gruvbox, Tokyo Night, Rose Pine, and seven procedural transforms (Barbie, Neon, Matrix, Vaporwave, Grayscale, Synthwave, Ember).
+A few people asked if I'd turn my Studio theming setup into something anyone could run, so here it is - one executable that themes all of Roblox Studio: the script editor and Qt chrome, the modern Explorer, Properties, Ribbon and Footer, the Start Page and toasts. Sixteen themes (Catppuccin's four flavours, Dracula, Nord, Gruvbox, Tokyo Night, Rose Pine, plus a few procedural ones like Barbie and Synthwave). Works on Windows, and on Linux under Vinegar/Wine.
 
-## Use
+**Please be aware that this modifies the Studio binary.** It patches `RobloxStudioBeta.exe` and rewrites Studio's built-in plugins, which is technically against Roblox's Terms of Use - I asked around and nobody was too concerned, but it's your account. Everything it touches gets a `.stock` backup first and `restore` puts it all back.
 
-Grab the binary for your platform from the [releases](https://github.com/4x8Matrix/studio-themer/releases), quit Studio, then:
+Grab a binary from the [releases](https://github.com/4x8Matrix/studio-themer/releases), quit Studio, then:
 
 ```
-studio-themer apply mocha          theme everything
-studio-themer status               what is applied
-studio-themer restore              back to stock
-studio-themer themes               list the themes
+studio-themer apply mocha
+studio-themer status
+studio-themer restore
+studio-themer themes
 ```
 
-Restart Studio after `apply` or `restore`. `apply --mode dark nord` themes only Studio's Dark slot so Light can carry another theme; `--dry-run` computes everything and writes nothing. Re-run `apply` after a Studio update; `status` tells you when one has happened.
-
-Tab completion: `studio-themer completions fish > ~/.config/fish/completions/studio-themer.fish` (also `bash`, `zsh`, `powershell`).
-
-## Know before you run it
-
-It patches `RobloxStudioBeta.exe` (two byte-level patches, self-locating, reversible) and rewrites Studio's built-in plugins and design tokens. Every file it touches gets a pristine `.stock` copy first, and `restore` puts them back. Modifying the client is against Roblox's Terms of Use; that is your call.
-
-## Building
-
-`pesde install`, then `scripts/check.sh` and `scripts/build.sh` (needs [rokit](https://github.com/rojo-rbx/rokit) and [pesde](https://pesde.dev)). Design notes live in `docs/`.
+Restart Studio after `apply` or `restore`, and re-run `apply` after a Studio update. `apply --mode dark nord` themes only the Dark slot if you want Light to carry a different theme.
 
 MIT.
