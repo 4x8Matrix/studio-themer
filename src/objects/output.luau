@@ -4,14 +4,17 @@
 local StdPolyfills = require("../../luau_packages/std_polyfills")
 
 local Logger = require("./logger")
+local progress = require("./progress")
 
 local output = {}
 
 function output.line(text: string)
+	progress.clear()
 	StdPolyfills.stdio.write(text .. "\n")
 end
 
 function output.fail(message: string): never
+	progress.clear()
 	Logger:error(message)
 
 	return zune.process.exit(1)

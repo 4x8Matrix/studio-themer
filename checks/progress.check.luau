@@ -33,4 +33,12 @@ assert(string.find(over, "] 100%", 1, true), "ratio above one reads as 100%")
 
 assert(not progress.isTerminal(), "checks run piped, so stdout is not a terminal")
 
+assert(progress.frame(1) == "⠋" and progress.frame(10) == "⠏", "spinner frames start and end on the braille wheel")
+assert(progress.frame(11) == progress.frame(1) and progress.frame(0) == progress.frame(10), "frames wrap around")
+
+local spinner = progress.spinner("reading")
+spinner.update("scanning")
+spinner.stop()
+assert(not progress.isTerminal(), "a spinner off a terminal draws nothing and stops cleanly")
+
 print("progress: pass")

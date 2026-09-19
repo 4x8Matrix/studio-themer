@@ -20,7 +20,9 @@ return command
 		progress.line(`{resolved.version}  ({resolved.versionDir})`)
 		progress.header("Restoring stock from the pristine copies")
 
-		local report = pipeline.restore(resolved)
+		local spinner = progress.spinner("restoring")
+		local report = pipeline.restore(resolved, spinner.update)
+		spinner.stop()
 
 		progress.line(`exe     : {if report.exe then "restored" else "no pristine copy found"}`)
 		progress.line(`tokens  : restored {report.tokens} files`)

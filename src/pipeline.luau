@@ -19,8 +19,19 @@ local mode = require("./theme/mode")
 local STEP_COUNT = 5
 local PLUGIN_PROGRESS_START = 0.45
 local PLUGIN_PROGRESS_END = 0.98
+local MEGABYTE = 1024 * 1024
 
 local pipeline = {}
+
+local function yieldToScheduler()
+	StdPolyfills.task.wait()
+end
+
+local function exeSize(location: locate.Location): string
+	local size = StdPolyfills.fileSystem.stat(location.exe).size or 0
+
+	return `{math.floor(size / MEGABYTE)} MB`
+end
 
 local function readThemesFile(location: locate.Location, name: string): string?
 	local path = `{location.themesDir}/{name}`
@@ -53,7 +64,7 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 	})
 
 	local exe = StdPolyfills.fileSystem.readFile(location.exe)
-	local bypassed, bypassError = verifyBypass.apply(exe)
+	local bypassed, bypassError = verifyBypass.apply(exe, yieldToScheduler)
 
 	if not bypassed then
 		return nil, `bypass: {bypassError}`
@@ -207,14 +218,39 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 	}
 end
 
-function pipeline.status(location: locate.Location): StatusReport
+function pipeline.status(location: locate.Location, report: ((phase: string) -> ())?): StatusReport
+	local function phase(text: string)
+		if report then
+			report(text)
+		end
+
+		yieldToScheduler()
+	end
+
+	phase(`reading RobloxStudioBeta.exe ({exeSize(location)})`)
+
 	local exe = StdPolyfills.fileSystem.readFile(location.exe)
-	local bypass, bypassError = verifyBypass.check(exe)
+
+	phase("checking the plugin verify gates")
+
+	local bypass, bypassError = verifyBypass.check(exe, yieldToScheduler)
+
+	phase("checking the Qt theme paths")
+
 	local redirect = qtRedirect.check(exe)
 	local lastApplied = state.read()
+
+	phase("reading the theme JSONs")
+
 	local darkTheme = readThemesFile(location, qtTheme.FILE_NAMES.dark)
 	local lightTheme = readThemesFile(location, qtTheme.FILE_NAMES.light)
+
+	phase("counting token backups")
+
 	local tokensPristine, tokensTotal = tokens.countPristine(location.versionDir)
+
+	phase("counting plugin backups")
+
 	local pluginsPristine, pluginsTotal = plugins.countPristine(location.pluginDir)
 
 	return {
@@ -236,9 +272,25 @@ function pipeline.status(location: locate.Location): StatusReport
 	}
 end
 
-function pipeline.restore(location: locate.Location): RestoreReport
+function pipeline.restore(location: locate.Location, report: ((phase: string) -> ())?): RestoreReport
+	local function phase(text: string)
+		if report then
+			report(text)
+		end
+
+		yieldToScheduler()
+	end
+
+	phase(`restoring RobloxStudioBeta.exe ({exeSize(location)})`)
+
 	local exeRestored = backup.restore(location.exe, backup.LEGACY_EXE)
+
+	phase("restoring token files")
+
 	local tokensRestored = tokens.restore(location.versionDir)
+
+	phase("restoring plugins")
+
 	local pluginsRestored = plugins.restore(location.pluginDir)
 
 	state.clear()

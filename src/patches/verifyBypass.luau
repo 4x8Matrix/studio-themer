@@ -2,7 +2,8 @@
 --> signature and, on failure, branch to a `jne` right before logging "Failed to verify signature for plugin".
 --> Rewriting that `jne rel32` into `jmp rel32; nop` makes the loader always take the load path. Internal
 --> permission is untouched, which is what keeps Studio from crashing. Both gates are located each run from the log
---> string and the code shape, never from an offset, so the patch survives Studio updates.
+--> string and the code shape, never from an offset, so the patch survives Studio updates. The scan is a second of
+--> pure Luau, so callers that show progress pass a `yield` hook that runs between the sixteen pattern searches.
 
 local binary = require("./binary")
 local pe = require("./pe")
@@ -20,7 +21,13 @@ local EXPECTED_GATES = 2
 
 local verifyBypass = {}
 
-local function leaCrossReferences(data: string, text: pe.Section, textBase: number, targetVa: number): { number }
+local function leaCrossReferences(
+	data: string,
+	text: pe.Section,
+	textBase: number,
+	targetVa: number,
+	yield: (() -> ())?
+): { number }
 	local hits = {}
 	local textStart = text.rawPointer
 	local textEnd = textStart + text.rawSize
@@ -28,6 +35,10 @@ local function leaCrossReferences(data: string, text: pe.Section, textBase: numb
 	for _, prefix in LEA_PREFIXES do
 		for register = 0, 7 do
 			local pattern = string.char(prefix, LEA_OPCODE, 0x05 + register * 8)
+
+			if yield then
+				yield()
+			end
 
 			for _, offset in binary.findAll(data, pattern, textStart, textEnd) do
 				local textIndex = offset - textStart
@@ -82,7 +93,7 @@ function verifyBypass.isPatched(bytes: string): boolean
 	return string.byte(bytes, 1) == JMP_REL32 and string.byte(bytes, 6) == NOP
 end
 
-function verifyBypass.locateGates(data: string): ({ Gate }?, string?)
+function verifyBypass.locateGates(data: string, yield: (() -> ())?): ({ Gate }?, string?)
 	local image, parseError = pe.parse(data)
 
 	if not image then
@@ -110,7 +121,7 @@ function verifyBypass.locateGates(data: string): ({ Gate }?, string?)
 	local textBase = image.imageBase + text.virtualAddress
 	local gates: { Gate } = {}
 
-	for _, logIndex in leaCrossReferences(data, text, textBase, targetVa) do
+	for _, logIndex in leaCrossReferences(data, text, textBase, targetVa, yield) do
 		local gateIndex = lastGateBefore(data, text.rawPointer, logIndex)
 
 		if not gateIndex then
@@ -142,8 +153,8 @@ function verifyBypass.locateGates(data: string): ({ Gate }?, string?)
 	return gates
 end
 
-function verifyBypass.check(data: string): (CheckReport?, string?)
-	local gates, locateError = verifyBypass.locateGates(data)
+function verifyBypass.check(data: string, yield: (() -> ())?): (CheckReport?, string?)
+	local gates, locateError = verifyBypass.locateGates(data, yield)
 
 	if not gates then
 		return nil, locateError
@@ -160,8 +171,8 @@ function verifyBypass.check(data: string): (CheckReport?, string?)
 	return { gates = gates, patched = patched }
 end
 
-function verifyBypass.apply(data: string): (ApplyReport?, string?)
-	local report, checkError = verifyBypass.check(data)
+function verifyBypass.apply(data: string, yield: (() -> ())?): (ApplyReport?, string?)
+	local report, checkError = verifyBypass.check(data, yield)
 
 	if not report then
 		return nil, checkError

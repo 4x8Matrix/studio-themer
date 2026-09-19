@@ -85,8 +85,13 @@ return command
 		local resolved = location.resolve(context.commandOptions)
 
 		progress.line(`{resolved.version}  ({resolved.versionDir})`)
+
+		local spinner = progress.spinner("reading the install")
+		local report = pipeline.status(resolved, spinner.update)
+		spinner.stop()
+
 		progress.header("Install state")
-		output.line(formatStatus(pipeline.status(resolved)))
+		output.line(formatStatus(report))
 	end)
 	:addOption(location.prefixOption())
 	:addOption(location.exeOption())
