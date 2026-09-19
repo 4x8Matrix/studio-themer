@@ -3,3 +3,5 @@ build/
 .harness/
 .tmp/
 studio-themer.bundled.luau
+AGENTS.md
+.config.luau
