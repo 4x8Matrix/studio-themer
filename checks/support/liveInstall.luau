@@ -7,7 +7,7 @@ local StdPolyfills = require("../../luau_packages/std_polyfills")
 local locate = require("../../src/studio/locate")
 local rbxm = require("../../src/rbxm/rbxm")
 
-local TEMP_DIR = ".harness/tmp"
+local TEMP_DIR = ".tmp"
 
 local liveInstall = {}
 

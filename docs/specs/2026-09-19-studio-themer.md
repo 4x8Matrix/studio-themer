@@ -8,7 +8,7 @@ A Luau port of `~/Projects/Personal/studio-catppuccin` (Python) as one executabl
 - Mode: `--mode both|dark|light` (default `both`) selects which Studio slot the Qt theme and token layers write; the other slot keeps what it has, and a missing Qt file for the untouched slot is written stock so Qt always finds both. Plugins carry both token tables in one bytecode blob and always take the theme.
 - Runtime is Zune 0.5.6 (luau 0.700). The tool asserts it at start, as `create_app` does. `bin.luau` is the `pesde x` shim that spawns `zune run src/init.luau`.
 - Package name `4x8matrix/studio_themer`, binary `studio-themer`, author `Async Matrix <hi@asyncmatrix.dev>`, MIT.
-- Style: `~/Projects/Personal/Ai-Harness/docs/conventions.md`; stylua and selene configs copied from discord-luau; strict mode; the `create_app` shapes (builder chains, `Prototype`/`Interface` classes, `Information` tables).
+- Style: stylua and selene configs copied from discord-luau; strict mode; the `create_app` shapes (builder chains, `Prototype`/`Interface` classes, `Information` tables); no comments beyond a file header and the rare why.
 - Every layer output is byte-identical to the Python tool's output for the same pristine input, except where noted under Out of scope. The reference is the live install (`~/.var/app/org.vinegarhq.Vinegar/data/vinegar/versions/version-673d6e19eae14fec`, spec `mocha`, applied by `nuclear/studio_theme.py`) and its pristine backups.
 - Python `round` is round-half-even. Every port of `round` uses `color.roundHalfEven`; `_fmt` reproduces `round(v / 255, 6)` then `%g`.
 - Binary patches locate their targets by string anchor and code shape every run, never by offset. Two verify gates and two theme paths or refuse.
@@ -63,7 +63,7 @@ Paths are under `src/`. Types are exported from the module that owns them.
 
 ## Proof
 
-All units are pure Luau; checks live in `checks/*.check.luau` and run with `~/Projects/Personal/Ai-Harness/binary/run-checks checks zune`. Checks that need the live install locate it through `studio/locate` and print `skip` when it is absent, so the suite runs anywhere.
+All units are pure Luau; checks live in `checks/*.check.luau` and run with `zune run .zune/checks.luau`. Checks that need the live install locate it through `studio/locate` and print `skip` when it is absent, so the suite runs anywhere.
 
 - `color.check`: `roundHalfEven` on ties, `formatChannel` for 0, 255, 1, 31 (expected strings computed with Python), `rgbToHls`/`hlsToRgb` against Python values.
 - `mapper.check`: `mocha(32,34,39) == (30,30,46)`; twenty `autoMap` samples against Python output; `barbie` and `synthwave` samples; unknown spec errors.

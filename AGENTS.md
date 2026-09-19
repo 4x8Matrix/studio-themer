@@ -4,7 +4,7 @@ One Zune executable that themes every layer of Roblox Studio (exe patches, Qt th
 
 ## Paradigms
 
-Facts about this codebase. Where a line conflicts with the harness Luau contract (`~/Projects/Personal/Ai-Harness/docs/conventions.md`), this line wins here.
+Facts about this codebase, one per line. Where a line conflicts with a general style rule, this line wins here.
 
 - Runtime is Zune 0.5.6 only; `src/init.luau` refuses any other runtime. `zune.*` is reached directly only for what std_polyfills lacks: `zune.serde.zstd` (`src/rbxm/rbxm.luau`), `zune.fs.embedFile` (`src/assets.luau`), `zune.process.exit` (`src/objects/output.luau`), `zune.luau.compile` (checks). Everything else goes through `luau_packages/std_polyfills`.
 - Packages are pesde: `4x8matrix/cli_builder` 0.2.1 (commands, help, usage errors, completions), `discord_luau/std_polyfills` (fs, process, io, serde), `discord_luau/logger`. No TUI: the owner replaced the wizard with plain CLI output on 2026-09-19. `patches/` holds the one pesde patch (std_polyfills survives a failing `process.cwd` under Wine); `pesde install` applies it.
@@ -16,5 +16,5 @@ Facts about this codebase. Where a line conflicts with the harness Luau contract
 - Every colour decision goes through one `mapper.Mapper` from `src/theme/mapper.luau`; Python `round` semantics live in `color.roundHalfEven`. Outputs are byte-identical to the Python tool for the same pristine input, and the differential checks (`exePatches`, `recolor`, `tokens`, `qtTheme`) are the proof; they read the live Vinegar install read-only.
 - Backups: `.stock` beside every themed file; the Python suffixes (`.plugverify-bak`, `.orig-bak`, `.catppuccin-bak`) are recognised as pristine and never renamed (`src/studio/backup.luau`).
 - Mode: `--mode both|dark|light` selects the Qt slot files and token slot files; plugins always take the theme (both token tables share one bytecode blob).
-- Tooling: `scripts/check.sh` (stylua, selene, luau-lsp, checks), `scripts/build.sh` (darklua, `zune bundle` for Linux and, with `scripts/fetch-runtimes.sh`, Windows). House sensors: `~/Projects/Personal/Ai-Harness/binary/check-file` and `run-checks checks zune`. Commits are conventional with a body, no attribution.
+- Tooling: `scripts/check.sh` (stylua, selene, luau-lsp, checks), `scripts/build.sh` (darklua, `zune bundle` for Linux and, with `scripts/fetch-runtimes.sh`, Windows); CI runs the same two scripts, and a published GitHub release gets the built binaries attached. Commits are conventional with a body, no attribution.
 - Completions: `studio-themer completions <shell>` and the `__complete` hook are injected by cli_builder; nothing in this repo implements them.

@@ -5,7 +5,7 @@ local StdPolyfills = require("../luau_packages/std_polyfills")
 
 local backup = require("../src/studio/backup")
 
-local SCRATCH = ".harness/tmp/backup-check"
+local SCRATCH = ".tmp/backup-check"
 
 StdPolyfills.fileSystem.writeDir(SCRATCH)
 

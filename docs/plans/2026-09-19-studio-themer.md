@@ -1,6 +1,6 @@
 # studio-themer plan
 
-Spec: `docs/specs/2026-09-19-studio-themer.md`. Every task is pure; its proof is a check under `checks/` run with `~/Projects/Personal/Ai-Harness/binary/run-checks checks zune`, written first and seen to fail. Checks that read the live install go through `src/studio/locate.luau` and print `skip` when there is none. Style proof for every task: `binary/check-file` on the touched files and `zune run .zune/analyze.luau` clean.
+Spec: `docs/specs/2026-09-19-studio-themer.md`. Every task is pure; its proof is a check under `checks/` run with `zune run .zune/checks.luau`, written first and seen to fail. Checks that read the live install go through `src/studio/locate.luau` and print `skip` when there is none. Style proof for every task: `scripts/check.sh` clean.
 
 ## Files
 

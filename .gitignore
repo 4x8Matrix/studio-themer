@@ -1,4 +1,5 @@
 *_packages/
 build/
 .harness/
+.tmp/
 studio-themer.bundled.luau
