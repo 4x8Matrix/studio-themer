@@ -1,6 +1,6 @@
 # studio-themer design
 
-A Luau port of `~/Projects/Personal/studio-catppuccin` (Python) as one executable: `studio-themer apply <theme>` themes every layer of Roblox Studio under Vinegar/Wine, `status` says what is applied, `restore` puts stock back. Run bare it opens a terminal wizard. Built with the stack `create_app` uses (Zune runtime, pesde, `4x8matrix/cli_builder`, `4x8matrix/tui`, `discord_luau/std_polyfills`, `discord_luau/logger`), bundled by darklua into one file and by `zune bundle` into a standalone binary with the stock theme JSONs embedded. The patching logic is already proven in Python; this port must produce the same bytes from the same inputs, and that equality is its proof.
+A Luau port of `~/Projects/Personal/studio-catppuccin` (Python) as one executable: `studio-themer apply <theme>` themes every layer of Roblox Studio under Vinegar/Wine, `status` says what is applied, `restore` puts stock back. Output is pacman-style (`::` headers, one in-place progress bar per layer; the terminal wizard that shipped first was removed at the owner's request). Built with the stack `create_app` uses (Zune runtime, pesde, `4x8matrix/cli_builder`, `discord_luau/std_polyfills`, `discord_luau/logger`), bundled by darklua into one file and by `zune bundle` into a standalone binary with the stock theme JSONs embedded. The patching logic is already proven in Python; this port must produce the same bytes from the same inputs, and that equality is its proof.
 
 ## Constraints
 
@@ -37,18 +37,18 @@ Paths are under `src/`. Types are exported from the module that owns them.
 - `studio/backup.luau`: `pristinePath(livePath, legacySuffixes: { string }): string?`; `ensure(livePath, legacySuffixes): string` (returns the pristine path, creating `.stock` from the live file when none exists); `restore(livePath, legacySuffixes): boolean`.
 - `studio/locate.luau`: `findPrefix(explicit: string?): string?` (explicit, `WINEPREFIX`, then the candidate list); `findStudio(prefix): { string }` newest first; `findStudioWindows(root?)`; `locate(options: { prefix: string?, exe: string? }): Result<Location>` with `Location = { prefix, exe, version, versionDir, pluginDir, themesDir }`, dispatching on `process.getPlatform()`.
 - `studio/state.luau`: `path()` = `~/.config/studio-themer/state.json` (Linux) or `%APPDATA%/studio-themer/state.json` (Windows); `read(): State?`; `write(State)`; `clear()`; `State = { version: string, spec: string, mode: string, appliedAt: number }`.
-- `pipeline.luau`: `apply(spec, location, options: { mode: Mode, dryRun: boolean, report: (step: Step) -> () }): Result<ApplyReport>` runs `bypass`, `redirect`, `qtTheme`, `tokens`, `plugins`, then writes state; `status(location): StatusReport`; `restore(location): RestoreReport`. `Step = { index: number, name: string, detail: string, progress: number }`. The exe is read once and written once.
-- `commands/apply.luau`, `status.luau`, `restore.luau`, `themes.luau`: cli_builder commands; each resolves `Location` from `--prefix`/`--exe`, calls `pipeline`, prints the report lines. `apply` takes `<theme>` and `--dry-run`.
-- `ui/wizard.luau`: `run()`: tui screens `prereqs` (Studio located), `pick` (list of `knownSpecs()`), `mode` (both, dark, light), `confirm`, `loading` (gauge driven by `Step.progress`), `done`/`error`. Same key handling and layout skeleton as `createWizard.luau`; Ctrl+C restores the terminal from the SIGINT handler because Zune exits after it fires.
+- `pipeline.luau`: `apply(spec, location, options: { mode: Mode, dryRun: boolean, report: (step: Step) -> () }): Result<ApplyReport>` runs `bypass`, `redirect`, `qtTheme`, `tokens`, `plugins`, then writes state; `status(location): StatusReport`; `restore(location): RestoreReport`. `Step = { index: number, total: number, name: string, detail: string, ratio: number, progress: number }` where `ratio` is completion within the step (plugins report one per plugin) and `progress` overall. The exe is read once and written once.
+- `commands/apply.luau`, `status.luau`, `restore.luau`, `themes.luau`: cli_builder commands; each resolves `Location` from `--prefix`/`--exe`, calls `pipeline`, renders through `progress`. `apply` takes `<theme>`, `--mode`, `--dry-run` and `--yes`/`-y`; without `--yes` or `--dry-run` it asks `Studio must be fully quit. Proceed? [Y/n]` first. Bare `studio-themer` prints help.
+- `objects/progress.luau`: `header(text)`, `line(text)`, `done(text)`, `warn(text)` (`::` prefix, bold and coloured only on a terminal); `bar(ratio, width?)`; `stepLine(step, columns?)` (`(i/n) name detail [bar] pct`, detail padded to the terminal width or left whole when piped); `step(step)` (redraws in place with `\r` + clear-line on a terminal and prints only finished steps when piped); `confirm(question, defaultYes): boolean` (`[Y/n]`, reads a line, empty answer takes the default). `isTerminal()` is `io.terminal.getSize()` returning a width.
 - `assets.luau`: `read(name): string` returns the embedded file from `zune.fs.embedFile` when bundled, else `base/<name>` beside the package.
-- `init.luau`: the cli_builder app: name, version, description, `--verbose`, the four commands, and `setCallback` to the wizard when no command is given.
+- `init.luau`: the cli_builder app: name, version, description, `--verbose`, the four commands.
 
 ## Data flow
 
 - `apply <spec>`: `locate` -> `Location`. Exe: `fileSystem.readFile(exe)` -> `verifyBypass.apply` -> `qtRedirect.apply` -> if either changed, `backup.ensure(exe, { ".plugverify-bak" })` then write. Qt: `assets.read` both base JSONs -> `qtTheme.build` -> write `themesDir/Foundation{Dark,Light}Theme.json`. Tokens: `findPackages` -> for each pair `backup.ensure` both -> read the polarity-matching pristine -> `convert` -> write both. Plugins: `list` -> for each `backup.ensure(live, { ".orig-bak" })` -> `recolorModel(pristine)` -> write live; skipped names restored. Then `state.write`.
 - `status`: locate; `verifyBypass.check`, `qtRedirect.check` on the live exe; `qtTheme.readSpec` on the live Dark JSON; count pristine backups for tokens and plugins; compare `state.version` to `Location.version` and warn on update.
 - `restore`: exe from its pristine; tokens and plugins from theirs; `state.clear()`.
-- Reporting: `pipeline` never prints; it calls `report(Step)`. `commands/*` print one line per step; the wizard sets the gauge.
+- Reporting: `pipeline` never prints; it calls `report(Step)`. `commands/apply` hands each step to `progress.step`.
 
 ## Failure handling
 
@@ -58,7 +58,7 @@ Paths are under `src/`. Types are exported from the module that owns them.
 - Theme paths not found and not redirected: `qtRedirect.apply` errors the same way.
 - A plugin whose largest PROP is not `Source`, or whose zstd frame does not decode: written back unchanged and counted as `skipped` in the report.
 - A module that fails to parse in pass 2: pass 1 result is kept, pass 2 count is 0 for that module (Python behaviour).
-- Wizard errors surface in the `error` screen and are re-printed to stderr after the terminal is restored.
+- A `n` at the prompt aborts before anything is read or written; stdout closed mid-run (a pipe to `head`) ends the process with BrokenPipe like any CLI.
 - Studio must be fully quit for changes to load; every mutating command ends with that line.
 
 ## Proof

@@ -6,14 +6,13 @@ local restoreCommand = require("@self/commands/restore")
 local statusCommand = require("@self/commands/status")
 local themesCommand = require("@self/commands/themes")
 local Logger = require("@self/objects/logger")
-local wizard = require("@self/ui/wizard")
 
 local cli = CliBuilder.cli
 
 local app = cli.new()
 	:setVersion("0.1.0")
 	:setName("studio-themer")
-	:setDescription("one command that themes every layer of Roblox Studio; run it bare for the wizard.")
+	:setDescription("one command that themes every layer of Roblox Studio.")
 	:setLicense("MIT")
 	:addAuthor("Async Matrix <hi@asyncmatrix.dev>")
 	:setGitRepository("https://github.com/4x8Matrix/studio-themer")
@@ -33,9 +32,6 @@ local app = cli.new()
 		else
 			Logger:setLogLevel("Warn")
 		end
-	end)
-	:setCallback(function()
-		wizard.run()
 	end)
 	:addCommand(applyCommand)
 	:addCommand(statusCommand)

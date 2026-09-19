@@ -56,6 +56,7 @@ local names = {}
 
 for _, step in steps do
 	assert(step.progress >= 0 and step.progress <= 1, "progress stays in range")
+	assert(step.ratio >= 0 and step.ratio <= 1, "ratio stays in range")
 
 	if not table.find(names, step.name) then
 		table.insert(names, step.name)
@@ -66,7 +67,20 @@ assert(
 	table.concat(names, ",") == "bypass,redirect,qt-theme,tokens,plugins,done",
 	`steps reported in order: {table.concat(names, ",")}`
 )
-assert(steps[#steps].progress == 1, "last step is complete")
+assert(steps[#steps].progress == 1 and steps[#steps].ratio == 1, "last step is complete")
+
+local pluginRatios = {}
+
+for _, step in steps do
+	if step.name == "plugins" then
+		table.insert(pluginRatios, step.ratio)
+	end
+end
+
+assert(
+	#pluginRatios > 2 and pluginRatios[1] == 0 and pluginRatios[#pluginRatios] == 1,
+	"plugins report a ratio per plugin"
+)
 
 local missing, missingError = pipeline.apply("nope", location, {
 	mode = "both",

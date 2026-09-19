@@ -3,6 +3,7 @@
 local CliBuilder = require("../../luau_packages/cli_builder")
 
 local output = require("../objects/output")
+local progress = require("../objects/progress")
 local location = require("./location")
 local pipeline = require("../pipeline")
 
@@ -79,8 +80,12 @@ return command
 	:setName("status")
 	:setDescription("Report what is applied to the Studio install, layer by layer")
 	:setCallback(function(context)
+		progress.header("Locating Roblox Studio...")
+
 		local resolved = location.resolve(context.commandOptions)
 
+		progress.line(`{resolved.version}  ({resolved.versionDir})`)
+		progress.header("Install state")
 		output.line(formatStatus(pipeline.status(resolved)))
 	end)
 	:addOption(location.prefixOption())

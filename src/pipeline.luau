@@ -43,7 +43,14 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 	local dryRun = options.dryRun
 	local slots: mode.Mode = options.mode
 
-	report({ index = 1, total = STEP_COUNT, name = "bypass", detail = "locating plugin verify gates", progress = 0.02 })
+	report({
+		index = 1,
+		total = STEP_COUNT,
+		name = "bypass",
+		detail = "locating plugin verify gates",
+		ratio = 0,
+		progress = 0.02,
+	})
 
 	local exe = StdPolyfills.fileSystem.readFile(location.exe)
 	local bypassed, bypassError = verifyBypass.apply(exe)
@@ -57,9 +64,17 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 		total = STEP_COUNT,
 		name = "bypass",
 		detail = `{#bypassed.gates} gates, {bypassed.alreadyPatched} already patched, {bypassed.patched} to patch`,
+		ratio = 1,
 		progress = 0.12,
 	})
-	report({ index = 2, total = STEP_COUNT, name = "redirect", detail = "locating Qt theme paths", progress = 0.14 })
+	report({
+		index = 2,
+		total = STEP_COUNT,
+		name = "redirect",
+		detail = "locating Qt theme paths",
+		ratio = 0,
+		progress = 0.14,
+	})
 
 	local redirected, redirectError = qtRedirect.apply(bypassed.data)
 
@@ -79,9 +94,17 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 		total = STEP_COUNT,
 		name = "redirect",
 		detail = `{redirected.patched} paths to redirect{if exeChanged and not dryRun then ", exe written" else ""}`,
+		ratio = 1,
 		progress = 0.24,
 	})
-	report({ index = 3, total = STEP_COUNT, name = "qt-theme", detail = "building Foundation themes", progress = 0.26 })
+	report({
+		index = 3,
+		total = STEP_COUNT,
+		name = "qt-theme",
+		detail = "building Foundation themes",
+		ratio = 0,
+		progress = 0.26,
+	})
 
 	local baseDark = assets.read(qtTheme.FILE_NAMES.dark)
 	local baseLight = assets.read(qtTheme.FILE_NAMES.light)
@@ -114,10 +137,18 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 		index = 3,
 		total = STEP_COUNT,
 		name = "qt-theme",
-		detail = `{qtWritten} themed{if qtStocked > 0 then `, {qtStocked} stock` else ""} -> {location.themesDir}`,
+		detail = `{qtWritten} themed{if qtStocked > 0 then `, {qtStocked} stock` else ""} in StudioThemes`,
+		ratio = 1,
 		progress = 0.34,
 	})
-	report({ index = 4, total = STEP_COUNT, name = "tokens", detail = "rewriting Foundation palettes", progress = 0.36 })
+	report({
+		index = 4,
+		total = STEP_COUNT,
+		name = "tokens",
+		detail = "rewriting Foundation palettes",
+		ratio = 0,
+		progress = 0.36,
+	})
 
 	local tokenReport = tokens.apply(location.versionDir, spec, themeMapper, slots, dryRun)
 
@@ -126,6 +157,7 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 		total = STEP_COUNT,
 		name = "tokens",
 		detail = `{tokenReport.literals} literals across {tokenReport.files} files`,
+		ratio = 1,
 		progress = PLUGIN_PROGRESS_START,
 	})
 
@@ -138,6 +170,7 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 			total = STEP_COUNT,
 			name = "plugins",
 			detail = `{name} ({pluginIndex}/{#pluginNames})`,
+			ratio = (pluginIndex - 1) / math.max(1, #pluginNames),
 			progress = PLUGIN_PROGRESS_START
 				+ (PLUGIN_PROGRESS_END - PLUGIN_PROGRESS_START) * (pluginIndex - 1) / math.max(1, #pluginNames),
 		})
@@ -148,6 +181,7 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 		total = STEP_COUNT,
 		name = "plugins",
 		detail = `{pluginReport.themed} themed, {pluginReport.skipped} skipped, {pluginReport.restored} restored to stock`,
+		ratio = 1,
 		progress = PLUGIN_PROGRESS_END,
 	})
 
@@ -155,7 +189,7 @@ function pipeline.apply(spec: string, location: locate.Location, options: ApplyO
 		state.write({ version = location.version, spec = spec, mode = slots, appliedAt = os.time() })
 	end
 
-	report({ index = STEP_COUNT, total = STEP_COUNT, name = "done", detail = spec, progress = 1 })
+	report({ index = STEP_COUNT, total = STEP_COUNT, name = "done", detail = spec, ratio = 1, progress = 1 })
 
 	return {
 		spec = spec,
@@ -217,6 +251,7 @@ export type Step = {
 	total: number,
 	name: string,
 	detail: string,
+	ratio: number,
 	progress: number,
 }
 

@@ -23,7 +23,7 @@ for _, argument in process.args do
 end
 
 if osInfo == "windows" then
-	local needsConsole = #process.args == 0
+	local needsConsole = false
 
 	for _, argument in process.args do
 		if argument == "apply" then

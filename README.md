@@ -1,12 +1,12 @@
 # studio-themer
 
-One command that themes every layer of Roblox Studio, on Windows and on Linux under Wine/Vinegar, with a terminal wizard. Sixteen themes ship: nine palettes (Catppuccin's four flavours, Dracula, Nord, Gruvbox, Tokyo Night, Rose Pine) and seven procedural transforms (Barbie, Neon, Matrix, Vaporwave, Grayscale, Synthwave, Ember).
+One command that themes every layer of Roblox Studio, on Windows and on Linux under Wine/Vinegar. Sixteen themes ship: nine palettes (Catppuccin's four flavours, Dracula, Nord, Gruvbox, Tokyo Night, Rose Pine) and seven procedural transforms (Barbie, Neon, Matrix, Vaporwave, Grayscale, Synthwave, Ember).
 
 A Luau port of [studio-catppuccin](../studio-catppuccin), whose README explains the four rendering stacks Studio uses and why theming all of them takes two binary patches, a Qt theme file, an on-disk token rewrite and a bytecode recolour. This tool does all of that in one idempotent `apply`, and its outputs are byte-identical to the Python originals.
 
 ```
-studio-themer                          open the wizard
-studio-themer apply mocha              theme every layer
+studio-themer apply mocha              theme every layer (asks before writing)
+studio-themer apply -y mocha           same, no prompt
 studio-themer apply --mode dark nord   theme only Studio's Dark slot; Light keeps what it has
 studio-themer apply --dry-run latte    compute everything, write nothing
 studio-themer status                   what is applied, layer by layer
@@ -15,6 +15,20 @@ studio-themer themes                   list the themes
 ```
 
 Options go before the positional argument (`apply --mode dark --dry-run mocha`). `--prefix <path>` and `--exe <path>` point at an install the lookup did not find.
+
+Output is pacman-style: `::` headers and one progress bar per layer, redrawn in place on a terminal and printed once per layer when piped.
+
+```
+:: Locating Roblox Studio...
+   version-673d6e19eae14fec  (~/.var/app/org.vinegarhq.Vinegar/data/vinegar/versions/version-673d6e19eae14fec)
+:: Applying mocha to the dark and light slots (plugins always take the theme)
+:: Studio must be fully quit. Proceed? [Y/n]
+(1/5) bypass    2 gates, 2 already patched, 0 to patch     [######################] 100%
+(2/5) redirect  0 paths to redirect                        [######################] 100%
+(3/5) qt-theme  2 themed in StudioThemes                   [######################] 100%
+(4/5) tokens    26262 literals across 106 files            [######################] 100%
+(5/5) plugins   Flipbook (25/48)                           [###########-----------]  50%
+```
 
 ## Install
 
