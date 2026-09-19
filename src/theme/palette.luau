@@ -259,6 +259,17 @@ palette.FLAVORS = table.freeze({
 	}),
 })
 
+palette.FLAVOR_NAMES = table.freeze({
+	"latte",
+	"frappe",
+	"macchiato",
+	"mocha",
+	"dracula",
+	"nord",
+	"gruvbox",
+	"tokyo-night",
+	"rose-pine",
+})
 palette.DARK_FLAVORS =
 	table.freeze({ "mocha", "macchiato", "frappe", "dracula", "nord", "gruvbox", "tokyo-night", "rose-pine" })
 palette.LIGHT_FLAVORS = table.freeze({ "latte" })
