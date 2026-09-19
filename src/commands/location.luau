@@ -17,6 +17,7 @@ function location.prefixOption(): CliBuilder.Option
 			name = "prefix",
 			type = "string",
 			valueName = "path",
+			env = "STUDIO_THEMER_PREFIX",
 			description = "Wine prefix holding Studio (default: WINEPREFIX, then the Vinegar and ~/.wine locations)",
 		})
 		:build()
@@ -28,6 +29,7 @@ function location.exeOption(): CliBuilder.Option
 			name = "exe",
 			type = "string",
 			valueName = "path",
+			env = "STUDIO_THEMER_EXE",
 			description = "Path to RobloxStudioBeta.exe (default: the newest install under the prefix)",
 		})
 		:build()

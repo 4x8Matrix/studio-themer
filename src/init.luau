@@ -6,6 +6,8 @@ local restoreCommand = require("@self/commands/restore")
 local statusCommand = require("@self/commands/status")
 local themesCommand = require("@self/commands/themes")
 local Logger = require("@self/objects/logger")
+local output = require("@self/objects/output")
+local progress = require("@self/objects/progress")
 
 local cli = CliBuilder.cli
 
@@ -18,14 +20,16 @@ local app = cli.new()
 	:setGitRepository("https://github.com/4x8Matrix/studio-themer")
 	:setBugReportUrl("https://github.com/4x8Matrix/studio-themer/issues")
 	:setEpilog(
-		"Examples:\n  studio-themer                      open the wizard\n  studio-themer apply mocha          theme every layer\n  studio-themer apply --dry-run nord compute everything, write nothing\n  studio-themer status\n  studio-themer restore"
+		"Examples:\n  studio-themer apply mocha              theme every layer\n  studio-themer apply --mode dark nord   theme only the Dark slot\n  studio-themer apply mocha --dry-run    compute everything, write nothing\n  studio-themer completions fish > ~/.config/fish/completions/studio-themer.fish\n  studio-themer status\n  studio-themer restore"
 	)
-	:addOption({
-		name = "verbose",
-		type = "boolean",
-		description = "Verbose logs are created",
-		aliases = { "V" },
-	})
+	:addOption(CliBuilder.option
+		.new({
+			name = "verbose",
+			type = "boolean",
+			description = "Verbose logs are created",
+			aliases = { "V" },
+		})
+		:build())
 	:setBeforeRunHook(function(context)
 		if context.globalOptions.verbose then
 			Logger:setLogLevel("Debug")
@@ -37,6 +41,7 @@ local app = cli.new()
 	:addCommand(statusCommand)
 	:addCommand(restoreCommand)
 	:addCommand(themesCommand)
+	:configure({ ansiColorEnabled = progress.isTerminal(), output = output.line })
 
 local currentRuntime = StdPolyfills.runtime.getRuntime()
 
@@ -46,4 +51,4 @@ if currentRuntime ~= "Zune" then
 	return
 end
 
-app:run(StdPolyfills.process.getArgs())
+zune.process.exit(app:run(StdPolyfills.process.getArgs(), StdPolyfills.process.getEnv()))

@@ -14,9 +14,18 @@ studio-themer restore                  stock back from the pristine copies
 studio-themer themes                   list the themes
 ```
 
-Options go before the positional argument (`apply --mode dark --dry-run mocha`). `--prefix <path>` and `--exe <path>` point at an install the lookup did not find.
+Options go anywhere (`apply mocha --mode dark --dry-run` works too). `--prefix <path>` and `--exe <path>` point at an install the lookup did not find; `STUDIO_THEMER_PREFIX` and `STUDIO_THEMER_EXE` do the same from the environment. Unknown themes, modes, commands and options are usage errors (exit code 2) with a did-you-mean.
 
-Output is pacman-style: `::` headers and one progress bar per layer, redrawn in place on a terminal and printed once per layer when piped.
+Tab completion for bash, zsh, fish and PowerShell, including theme names and modes:
+
+```
+studio-themer completions fish > ~/.config/fish/completions/studio-themer.fish
+studio-themer completions bash > ~/.local/share/bash-completion/completions/studio-themer
+studio-themer completions zsh > ~/.zsh/completions/_studio-themer
+studio-themer completions powershell >> $PROFILE
+```
+
+Output is pacman-style: `::` headers and one progress bar per layer, redrawn in place on a terminal with a spinner while a layer is still working (reading the 200 MB exe, scanning it for the patch sites), and printed once per layer when piped.
 
 ```
 :: Locating Roblox Studio...

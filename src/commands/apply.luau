@@ -10,6 +10,7 @@ local pipeline = require("../pipeline")
 local mapper = require("../theme/mapper")
 local mode = require("../theme/mode")
 
+local argument = CliBuilder.argument
 local command = CliBuilder.command
 local option = CliBuilder.option
 
@@ -18,19 +19,10 @@ return command
 	:setName("apply")
 	:setDescription("Apply a theme to every layer of the Studio install (bypass, redirect, Qt theme, tokens, plugins)")
 	:setCallback(function(context)
-		local spec = context.commandArguments.theme
+		local spec = context.commandArguments.theme :: string
 		local dryRun = context.commandOptions["dry-run"] == true
 		local skipConfirm = context.commandOptions.yes == true
-		local modeOption = context.commandOptions.mode
-		local slots = mode.parse(if modeOption then tostring(modeOption) else nil)
-
-		if not table.find(mapper.knownSpecs(), spec) then
-			output.fail(`Unknown theme '{spec}'. Known themes: {table.concat(mapper.knownSpecs(), ", ")}`)
-		end
-
-		if not slots then
-			output.fail(`Unknown mode '{tostring(modeOption)}'. Modes: {table.concat(mode.MODES, ", ")}`)
-		end
+		local slots: mode.Mode = mode.parse(tostring(context.commandOptions.mode)) or mode.DEFAULT
 
 		progress.header("Locating Roblox Studio...")
 
@@ -38,7 +30,7 @@ return command
 
 		progress.line(`{resolved.version}  ({resolved.versionDir})`)
 		progress.header(
-			`Applying {spec} to the {mode.describe(slots :: mode.Mode)} (plugins always take the theme){if dryRun
+			`Applying {spec} to the {mode.describe(slots)} (plugins always take the theme){if dryRun
 				then "  [dry-run: nothing is written]"
 				else ""}`
 		)
@@ -52,7 +44,7 @@ return command
 		end
 
 		local report, applyError = pipeline.apply(spec, resolved, {
-			mode = slots :: mode.Mode,
+			mode = slots,
 			dryRun = dryRun,
 			report = function(step: pipeline.Step)
 				if step.name ~= "done" then
@@ -71,18 +63,21 @@ return command
 			progress.done(`Applied {spec}. Fully quit and restart Studio.`)
 		end
 	end)
-	:addArgument({
-		name = "theme",
-		type = "string",
-		required = true,
-		description = "Theme to apply; `studio-themer themes` lists them",
-	})
+	:addArgument(argument
+		.new({
+			name = "theme",
+			type = "string",
+			required = true,
+			choices = mapper.knownSpecs(),
+			description = "Theme to apply",
+		})
+		:build())
 	:addOption(option
 		.new({
 			name = "mode",
 			type = "string",
-			valueName = "both|dark|light",
-			defaultValue = "both",
+			choices = table.clone(mode.MODES) :: { any },
+			defaultValue = mode.DEFAULT :: string,
 			description = "Which Studio theme slot to theme; the other keeps what it has (plugins always take the theme)",
 		})
 		:build())

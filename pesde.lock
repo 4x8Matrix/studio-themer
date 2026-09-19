@@ -5,15 +5,15 @@ name = "4x8matrix/studio_themer"
 version = "0.1.0"
 target = "luau"
 
-[graph."4x8matrix/cli_builder@0.1.0-dev.1 luau"]
-direct = ["cli_builder", { name = "4x8matrix/cli_builder", version = "^0.1.0-dev.1", index = "default" }, "standard"]
+[graph."4x8matrix/cli_builder@0.2.1 luau"]
+direct = ["cli_builder", { name = "4x8matrix/cli_builder", version = "^0.2.1", index = "default" }, "standard"]
 
-[graph."4x8matrix/cli_builder@0.1.0-dev.1 luau".pkg_ref]
+[graph."4x8matrix/cli_builder@0.2.1 luau".pkg_ref]
 ref_ty = "pesde"
 index_url = "https://github.com/pesde-pkg/index"
 
-[graph."4x8matrix/cli_builder@0.1.0-dev.1 luau".pkg_ref.dependencies]
-frktest = [{ name = "itsfrank/frktest", version = "^0.0.2", index = "https://github.com/pesde-pkg/index", target = "lune" }, "dev"]
+[graph."4x8matrix/cli_builder@0.2.1 luau".pkg_ref.dependencies]
+frktest = [{ name = "itsfrank/frktest", version = "^0.0.4", index = "https://github.com/pesde-pkg/index" }, "dev"]
 
 [graph."discord_luau/logger@0.0.4 luau"]
 direct = ["logger", { name = "discord_luau/logger", version = ">=0.0.0", index = "default" }, "standard"]

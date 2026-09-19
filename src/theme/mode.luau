@@ -2,11 +2,14 @@
 --> settings; theming one slot leaves the other as it was, so two different themes can live side by side, or both
 --> can carry one theme so the toggle never leaves it.
 
-local MODES = { "both", "dark", "light" }
+export type Mode = "both" | "dark" | "light"
+
+local MODES: { Mode } = { "both", "dark", "light" }
+local DEFAULT: Mode = "both"
 
 local mode = {
 	MODES = MODES,
-	DEFAULT = "both",
+	DEFAULT = DEFAULT,
 }
 
 function mode.parse(value: string?): Mode?
@@ -38,7 +41,5 @@ function mode.describe(value: Mode): string
 
 	return `{value} slot only`
 end
-
-export type Mode = "both" | "dark" | "light"
 
 return mode

@@ -26,7 +26,7 @@ default = "https://github.com/pesde-pkg/index"
 [dependencies]
 std_polyfills = { name = "discord_luau/std_polyfills", version = ">=0.0.0" }
 logger = { name = "discord_luau/logger", version = ">=0.0.0" }
-cli_builder = { name = "4x8matrix/cli_builder", version = "0.1.0-dev.1" }
+cli_builder = { name = "4x8matrix/cli_builder", version = "0.2.1" }
 
 [patches]
 "discord_luau/std_polyfills" = { "0.0.3 luau" = "patches/discord_luau+std_polyfills-0.0.3+luau.patch" }
