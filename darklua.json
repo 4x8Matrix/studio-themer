@@ -1,0 +1,11 @@
+{
+	"generator": "retain_lines",
+	"bundle": {
+		"require_mode": {
+			"name": "luau",
+			"use_luau_configuration": true
+		},
+		"modules_identifier": "__DARKLUA_BUNDLE_MODULES",
+		"excludes": ["@lune/**"]
+	}
+}

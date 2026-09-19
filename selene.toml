@@ -1,0 +1,7 @@
+std = "luau+zune"
+exclude = ["**/luau_packages/**", "build/**"]
+
+[lints]
+high_cyclomatic_complexity = "allow"
+if_same_then_else = "allow"
+shadowing = "allow"

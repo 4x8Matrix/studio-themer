@@ -1,0 +1,29 @@
+name = "4x8matrix/studio_themer"
+version = "0.1.0"
+description = "Studio Themer - one command that themes every layer of Roblox Studio, with a terminal wizard."
+license = "MIT"
+authors = ["Async Matrix <hi@asyncmatrix.dev>"]
+repository = "https://github.com/4x8Matrix/studio-themer"
+pesde_version = "0.7.3"
+
+includes = [
+    "src/**/*",
+    "base/**/*",
+    "bin.luau",
+    "pesde.toml",
+    "LICENSE",
+    "README.md",
+]
+
+[target]
+environment = "luau"
+bin = "bin.luau"
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
+
+[dependencies]
+std_polyfills = { name = "discord_luau/std_polyfills", version = ">=0.0.0" }
+logger = { name = "discord_luau/logger", version = ">=0.0.0" }
+cli_builder = { name = "4x8matrix/cli_builder", version = "0.1.0-dev.1" }
+cli_tui = { name = "4x8matrix/tui", version = "0.1.0-dev.2" }
