@@ -58,6 +58,7 @@ function rbxm.findSourceChunk(model: Model): (number?, string?)
 		return
 	end
 
+	-- seam: zune's zstd needs the frame content size Roblox always writes, trigger: a plugin frame without it
 	local ok, raw = pcall(zune.serde.zstd.decompress, model.chunks[largestIndex].payload)
 
 	if not ok then
