@@ -1,13 +1,21 @@
 --> What was last applied, and to which Studio version, so status can say when an update has wiped the patches.
+--> Lives under ~/.config on Linux and %APPDATA% on Windows.
 
 local StdPolyfills = require("../../luau_packages/std_polyfills")
 
-local STATE_SUBPATH = "/.config/studio-themer/state.json"
+local UNIX_SUBPATH = "/.config/studio-themer/state.json"
+local WINDOWS_SUBPATH = "/studio-themer/state.json"
 
 local state = {}
 
 function state.path(): string
-	return (StdPolyfills.process.getEnv().HOME or ".") .. STATE_SUBPATH
+	local environment = StdPolyfills.process.getEnv()
+
+	if StdPolyfills.process.getPlatform() == "windows" then
+		return (string.gsub(environment.APPDATA or environment.USERPROFILE or ".", "\\", "/")) .. WINDOWS_SUBPATH
+	end
+
+	return (environment.HOME or ".") .. UNIX_SUBPATH
 end
 
 function state.read(): State?

@@ -13,6 +13,7 @@ includes = [
     "pesde.toml",
     "LICENSE",
     "README.md",
+    "patches/**/*",
 ]
 
 [target]
@@ -27,3 +28,6 @@ std_polyfills = { name = "discord_luau/std_polyfills", version = ">=0.0.0" }
 logger = { name = "discord_luau/logger", version = ">=0.0.0" }
 cli_builder = { name = "4x8matrix/cli_builder", version = "0.1.0-dev.1" }
 cli_tui = { name = "4x8matrix/tui", version = "0.1.0-dev.2" }
+
+[patches]
+"discord_luau/std_polyfills" = { "0.0.3 luau" = "patches/discord_luau+std_polyfills-0.0.3+luau.patch" }

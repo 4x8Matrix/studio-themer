@@ -1,0 +1,15 @@
+diff --git a/src/zune/process.luau b/src/zune/process.luau
+index 13da718..9db6ad5 100644
+--- a/src/zune/process.luau
++++ b/src/zune/process.luau
+@@ -7,7 +7,9 @@ process.arch = zune.platform.cpu.arch
+ local rawArgs = zune.process.args
+ process.args = table.move(rawArgs, 2, #rawArgs, 1, {})
+ process.env = zune.process.env
+-process.cwd = zune.process.cwd()
++-- process.cwd can fail under Wine (error.Unexpected); fall back to "." so requiring the module never throws
++local cwdOk, cwd = pcall(zune.process.cwd)
++process.cwd = if cwdOk then cwd else "."
+ 
+ function process.run(exec: string, args: { string }?, opts: { cwd: string?, env: { [string]: string }? }?)
+ 	return zune.process.run(exec, args, opts :: any)

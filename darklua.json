@@ -6,6 +6,11 @@
 			"use_luau_configuration": true
 		},
 		"modules_identifier": "__DARKLUA_BUNDLE_MODULES",
-		"excludes": ["@lune/**"]
+		"excludes": [
+			"@lune/**",
+			"@lute/**",
+			"@eryx/**",
+			"@std/**"
+		]
 	}
 }
