@@ -217,11 +217,12 @@ function locate.locate(options: LocateOptions): (Location?, string?)
 		themesDir = winePrefix .. "/" .. WINE_THEMES_SUBDIR
 	end
 
-	local versionDir = parentDirectory(normalise(exe))
+	local exePath = exe :: string
+	local versionDir = parentDirectory(normalise(exePath))
 
 	return {
 		prefix = prefix,
-		exe = exe,
+		exe = exePath,
 		version = string.match(versionDir, "[^/]+$") or versionDir,
 		versionDir = versionDir,
 		pluginDir = versionDir .. "/" .. PLUGIN_SUBDIR,
