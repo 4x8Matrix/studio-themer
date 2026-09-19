@@ -12,7 +12,7 @@ local progress = require("@self/objects/progress")
 local cli = CliBuilder.cli
 
 local app = cli.new()
-	:setVersion("0.1.0")
+	:setVersion("0.2.0")
 	:setName("studio-themer")
 	:setDescription("one command that themes every layer of Roblox Studio.")
 	:setLicense("MIT")

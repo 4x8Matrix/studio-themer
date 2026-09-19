@@ -1,5 +1,5 @@
 name = "4x8matrix/studio_themer"
-version = "0.1.0"
+version = "0.2.0"
 description = "Studio Themer - one command that themes every layer of Roblox Studio, with a terminal wizard."
 license = "MIT"
 authors = ["Async Matrix <hi@asyncmatrix.dev>"]
