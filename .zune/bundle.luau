@@ -1,18 +1,23 @@
 --> Task to bundle the tool into one Luau file with darklua, then into standalone executables with zune: the
 --> native one always, and a Windows one when scripts/fetch-runtimes.sh has placed the Windows zune under build/.
---> The bundled script sits at the package root while zune embeds it, because embedded files resolve relative to
---> the entry script's directory and the assets are addressed as base/<name>.
+--> zune keys an embedded file by its path relative to the bundling directory, written with the host's separator,
+--> and the executable looks a key up through its own platform's path resolver: a Windows executable built on
+--> Linux stores `base/x`, asks for `base\x`, and never finds it. So the bundled script and the assets are bundled
+--> from one staging directory, where every key is a bare file name both resolvers leave untouched.
 
 local task = require("./task")
 
+local STAGE = "build/stage"
 local BUNDLED = "studio-themer.bundled.luau"
-local ASSETS = { "base/FoundationDarkTheme.json", "base/FoundationLightTheme.json" }
+local ASSETS = { "FoundationDarkTheme.json", "FoundationLightTheme.json" }
 
 local function bundle(out: string, runtime: string?)
-	local bundleTask = task.new("zune"):addArgument("bundle"):addArgument(BUNDLED):addArgument(`--out={out}`)
+	local root = zune.process.cwd()
+	local bundleTask =
+		task.new("zune"):setcwd(STAGE):addArgument("bundle"):addArgument(BUNDLED):addArgument(`--out={root}/{out}`)
 
 	if runtime then
-		bundleTask:addArgument(`--exe={runtime}`)
+		bundleTask:addArgument(`--exe={root}/{runtime}`)
 	end
 
 	bundleTask:addArgument("--release"):addArgument("--files")
@@ -24,15 +29,19 @@ local function bundle(out: string, runtime: string?)
 	bundleTask:execute()
 end
 
-zune.fs.makeDir("build", true)
+zune.fs.makeDir(STAGE, true)
 
 task.new("darklua")
 	:addArgument("process")
 	:addArgument("src/init.luau")
-	:addArgument(BUNDLED)
+	:addArgument(`{STAGE}/{BUNDLED}`)
 	:addArgument("--config")
 	:addArgument("darklua.json")
 	:execute()
+
+for _, asset in ASSETS do
+	zune.fs.copy(`base/{asset}`, `{STAGE}/{asset}`, true)
+end
 
 bundle("build/studio-themer")
 
@@ -46,4 +55,5 @@ if zune.fs.stat("build/runtimes").kind == "directory" then
 	end
 end
 
-zune.fs.move(BUNDLED, "build/studio-themer.luau", true)
+zune.fs.move(`{STAGE}/{BUNDLED}`, "build/studio-themer.luau", true)
+zune.fs.deleteDir(STAGE, true)

@@ -1,5 +1,6 @@
---> The stock Qt theme files the tool ships with. Inside a `zune bundle` executable they are embedded; when run from
---> the package they are read from base/ beside src/.
+--> The stock Qt theme files the tool ships with. Inside a `zune bundle` executable they are embedded under their
+--> bare names, never under a directory (.zune/bundle.luau says why); when run from the package they are read from
+--> base/ beside src/.
 
 local StdPolyfills = require("../luau_packages/std_polyfills")
 
@@ -18,15 +19,14 @@ local function packageDirectory(): string
 end
 
 function assets.read(name: string): string
-	local embeddedName = `{ASSET_DIR}/{name}`
-	local ok, embedded = pcall(zune.fs.embedFile, embeddedName)
+	local ok, embedded = pcall(zune.fs.embedFile, name)
 
 	if ok then
 		return buffer.tostring(embedded)
 	end
 
 	for _, root in { packageDirectory(), ".", ".." } do
-		local path = `{root}/{embeddedName}`
+		local path = `{root}/{ASSET_DIR}/{name}`
 
 		if StdPolyfills.fileSystem.isFile(path) then
 			return StdPolyfills.fileSystem.readFile(path)
