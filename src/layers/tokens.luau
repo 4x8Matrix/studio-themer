@@ -110,16 +110,17 @@ end
 
 function tokens.convert(text: string, themeMapper: mapper.Mapper): (string, number)
 	local count = 0
-	local rewritten = string.gsub(text, FROM_RGB_PATTERN, function(red: string, green: string, blue: string): string
+
+	local function rewriteFromRgb(red: string, green: string, blue: string): string
 		count += 1
 
 		return string.format(
 			"Color3.fromRGB(%d, %d, %d)",
 			themeMapper(tonumber(red) :: number, tonumber(green) :: number, tonumber(blue) :: number)
 		)
-	end)
+	end
 
-	rewritten = string.gsub(rewritten, NEW_PATTERN, function(red: string, green: string, blue: string): string
+	local function rewriteNew(red: string, green: string, blue: string): string
 		local mappedRed, mappedGreen, mappedBlue = themeMapper(
 			color.unitToChannel(tonumber(red) :: number),
 			color.unitToChannel(tonumber(green) :: number),
@@ -133,7 +134,10 @@ function tokens.convert(text: string, themeMapper: mapper.Mapper): (string, numb
 			color.formatChannel(mappedGreen),
 			color.formatChannel(mappedBlue)
 		)
-	end)
+	end
+
+	local rewritten = string.gsub(text, FROM_RGB_PATTERN, rewriteFromRgb :: any)
+	rewritten = string.gsub(rewritten, NEW_PATTERN, rewriteNew :: any)
 
 	return rewritten, count
 end

@@ -158,8 +158,9 @@ local function readProto(data: string, offset: number, version: number, typesVer
 		_, offset = readVarint(data, offset)
 	end
 
-	_, offset = readVarint(data, offset)
-	_, offset = readVarint(data, offset)
+	local lineDefined, debugName
+	lineDefined, offset = readVarint(data, offset)
+	debugName, offset = readVarint(data, offset)
 
 	if binary.byteAt(data, offset) ~= 0 then
 		local lineGapLog2 = binary.byteAt(data, offset + 1)
@@ -191,7 +192,7 @@ local function readProto(data: string, offset: number, version: number, typesVer
 		offset += 1
 	end
 
-	return { code = code, constants = constants }, offset
+	return { code = code, constants = constants, lineDefined = lineDefined, debugName = debugName }, offset
 end
 
 function bytecode.parse(data: string): (Module?, string?)
@@ -218,7 +219,8 @@ function bytecode.parse(data: string): (Module?, string?)
 
 		if typesVersion == 3 then
 			while binary.byteAt(data, offset) ~= 0 do
-				_, offset = readVarint(data, offset + 1)
+				local _, next = readVarint(data, offset + 1)
+				offset = next
 			end
 
 			offset += 1
@@ -316,6 +318,8 @@ export type Constant = {
 export type Proto = {
 	code: { number },
 	constants: { Constant },
+	lineDefined: number,
+	debugName: number,
 }
 
 export type Module = {

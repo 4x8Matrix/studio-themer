@@ -49,14 +49,17 @@ local function checkSpec(map: { [string]: palette.MapSpec }, name: string)
 		assert(string.match(key, "^#%x+$") and (#key == 7 or #key == 9), `{name}: bad key {key}`)
 
 		if kind == "string" then
-			assert(spec == "keep" or table.find(ROLES, spec), `{name}[{key}]: unknown role {spec}`)
-		else
-			assert(spec[1] == "mix", `{name}[{key}]: unknown spec kind`)
-			assert(table.find(ROLES, spec[2] :: string), `{name}[{key}]: unknown mix role`)
-			assert(type(spec[3]) == "number", `{name}[{key}]: mix weight must be a number`)
+			local role = spec :: string
 
-			if spec[4] then
-				assert(table.find(ROLES, spec[4] :: string), `{name}[{key}]: unknown ground role`)
+			assert(role == "keep" or table.find(ROLES, role), `{name}[{key}]: unknown role {role}`)
+		else
+			local mixSpec = spec :: palette.MixSpec
+
+			assert(table.find(ROLES, mixSpec.role), `{name}[{key}]: unknown mix role`)
+			assert(mixSpec.weight >= 0 and mixSpec.weight <= 1, `{name}[{key}]: mix weight out of range`)
+
+			if mixSpec.ground then
+				assert(table.find(ROLES, mixSpec.ground), `{name}[{key}]: unknown ground role`)
 			end
 		end
 	end

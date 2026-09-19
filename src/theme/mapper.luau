@@ -63,11 +63,10 @@ local function resolveSpec(spec: palette.MapSpec, flavour: palette.Palette): str
 		return string.upper(flavour[spec :: string])
 	end
 
-	local role = spec[2] :: string
-	local weight = spec[3] :: number
-	local ground = if spec[4] then flavour[spec[4] :: string] else flavour.base
+	local mixSpec = spec :: palette.MixSpec
+	local ground = if mixSpec.ground then flavour[mixSpec.ground] else flavour.base
 
-	return color.mix(flavour[role], ground, weight)
+	return color.mix(flavour[mixSpec.role], ground, mixSpec.weight)
 end
 
 local function stockMap(spec: string): { [string]: palette.MapSpec }

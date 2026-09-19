@@ -1,10 +1,12 @@
 --> Palettes and the stock-colour maps, transcribed from studio-catppuccin/palette.py. Mapping spec grammar:
---> "role" selects that flavour colour, { "mix", role, weight, ground? } blends it into a ground role (base by
+--> "role" selects that flavour colour, { role, weight, ground? } blends it into a ground role (base by
 --> default), and "keep" leaves the stock value untouched.
 
-local palette = {}
+export type Palette = { [string]: string }
+export type MixSpec = { role: string, weight: number, ground: string? }
+export type MapSpec = string | MixSpec
 
-palette.FLAVORS = table.freeze({
+local FLAVORS: { [string]: Palette } = {
 	["latte"] = table.freeze({
 		rosewater = "#dc8a78",
 		flamingo = "#dd7878",
@@ -257,24 +259,8 @@ palette.FLAVORS = table.freeze({
 		mantle = "#16141f",
 		crust = "#12101c",
 	}),
-})
-
-palette.FLAVOR_NAMES = table.freeze({
-	"latte",
-	"frappe",
-	"macchiato",
-	"mocha",
-	"dracula",
-	"nord",
-	"gruvbox",
-	"tokyo-night",
-	"rose-pine",
-})
-palette.DARK_FLAVORS =
-	table.freeze({ "mocha", "macchiato", "frappe", "dracula", "nord", "gruvbox", "tokyo-night", "rose-pine" })
-palette.LIGHT_FLAVORS = table.freeze({ "latte" })
-
-palette.DARK_MAP = table.freeze({
+}
+local DARK_MAP: { [string]: MapSpec } = {
 	["#121215"] = "crust",
 	["#191A1F"] = "mantle",
 	["#202227"] = "base",
@@ -312,46 +298,45 @@ palette.DARK_MAP = table.freeze({
 	["#DF6AF7"] = "mauve",
 	["#CD377B"] = "pink",
 	["#F38FB8"] = "pink",
-	["#13235D"] = { "mix", "blue", 0.22 },
-	["#00145C"] = { "mix", "blue", 0.18 },
-	["#002299"] = { "mix", "blue", 0.3 },
-	["#0027B8"] = { "mix", "blue", 0.36 },
-	["#002DD6"] = { "mix", "blue", 0.42 },
-	["#470804"] = { "mix", "red", 0.18 },
-	["#571E00"] = { "mix", "peach", 0.2 },
-	["#732800"] = { "mix", "peach", 0.28 },
-	["#004A29"] = { "mix", "green", 0.2 },
-	["#533D02"] = { "mix", "yellow", 0.2 },
-	["#976C00"] = { "mix", "yellow", 0.34 },
+	["#13235D"] = { role = "blue", weight = 0.22 },
+	["#00145C"] = { role = "blue", weight = 0.18 },
+	["#002299"] = { role = "blue", weight = 0.3 },
+	["#0027B8"] = { role = "blue", weight = 0.36 },
+	["#002DD6"] = { role = "blue", weight = 0.42 },
+	["#470804"] = { role = "red", weight = 0.18 },
+	["#571E00"] = { role = "peach", weight = 0.2 },
+	["#732800"] = { role = "peach", weight = 0.28 },
+	["#004A29"] = { role = "green", weight = 0.2 },
+	["#533D02"] = { role = "yellow", weight = 0.2 },
+	["#976C00"] = { role = "yellow", weight = 0.34 },
 	["#40000000"] = "keep",
 	["#4C000000"] = "keep",
 	["#4D000000"] = "keep",
 	["#80000000"] = "keep",
 	["#4D191919"] = "keep",
 	["#4D353535"] = "keep",
-	["#1ECCCCCC"] = { "mix", "text", 1.0 },
-	["#26CCCCCC"] = { "mix", "text", 1.0 },
-	["#32CCCCCC"] = { "mix", "text", 1.0 },
-	["#4CCCCCCC"] = { "mix", "text", 1.0 },
-	["#BBBBBBBB"] = { "mix", "text", 1.0 },
-	["#DDDDDDDD"] = { "mix", "text", 1.0 },
-	["#1000B06F"] = { "mix", "green", 1.0 },
-	["#2000B06F"] = { "mix", "green", 1.0 },
-	["#10FA6400"] = { "mix", "peach", 1.0 },
-	["#20FA6400"] = { "mix", "peach", 1.0 },
-	["#FF00A2FF"] = { "mix", "sapphire", 1.0 },
-	["#4CB5C2BD"] = { "mix", "overlay1", 1.0 },
-})
-
-palette.LIGHT_MAP = table.freeze({
+	["#1ECCCCCC"] = { role = "text", weight = 1.0 },
+	["#26CCCCCC"] = { role = "text", weight = 1.0 },
+	["#32CCCCCC"] = { role = "text", weight = 1.0 },
+	["#4CCCCCCC"] = { role = "text", weight = 1.0 },
+	["#BBBBBBBB"] = { role = "text", weight = 1.0 },
+	["#DDDDDDDD"] = { role = "text", weight = 1.0 },
+	["#1000B06F"] = { role = "green", weight = 1.0 },
+	["#2000B06F"] = { role = "green", weight = 1.0 },
+	["#10FA6400"] = { role = "peach", weight = 1.0 },
+	["#20FA6400"] = { role = "peach", weight = 1.0 },
+	["#FF00A2FF"] = { role = "sapphire", weight = 1.0 },
+	["#4CB5C2BD"] = { role = "overlay1", weight = 1.0 },
+}
+local LIGHT_MAP: { [string]: MapSpec } = {
 	["#FFFFFF"] = "base",
 	["#F7F7F8"] = "base",
 	["#EEEFF1"] = "mantle",
 	["#E6E7EA"] = "mantle",
-	["#EBF1FF"] = { "mix", "blue", 0.1 },
+	["#EBF1FF"] = { role = "blue", weight = 0.1 },
 	["#D5D7DD"] = "surface0",
-	["#D0DAFE"] = { "mix", "blue", 0.18 },
-	["#CCDDFF"] = { "mix", "blue", 0.2 },
+	["#D0DAFE"] = { role = "blue", weight = 0.18 },
+	["#CCDDFF"] = { role = "blue", weight = 0.2 },
 	["#BCBEC8"] = "surface1",
 	["#6A6F81"] = "overlay0",
 	["#494D5A"] = "overlay1",
@@ -385,21 +370,21 @@ palette.LIGHT_MAP = table.freeze({
 	["#AE800B"] = "yellow",
 	["#DBA61F"] = "yellow",
 	["#F2BA2A"] = "yellow",
-	["#FAE4AA"] = { "mix", "yellow", 0.35 },
-	["#FDECC1"] = { "mix", "yellow", 0.28 },
+	["#FAE4AA"] = { role = "yellow", weight = 0.35 },
+	["#FDECC1"] = { role = "yellow", weight = 0.28 },
 	["#0C9B5A"] = "green",
 	["#01854B"] = "green",
 	["#015F35"] = "green",
 	["#004A29"] = "green",
 	["#1DB16A"] = "green",
-	["#65D79D"] = { "mix", "green", 0.55 },
-	["#8EE9B6"] = { "mix", "green", 0.4 },
-	["#D0FBE3"] = { "mix", "green", 0.2 },
+	["#65D79D"] = { role = "green", weight = 0.55 },
+	["#8EE9B6"] = { role = "green", weight = 0.4 },
+	["#D0FBE3"] = { role = "green", weight = 0.2 },
 	["#6E0785"] = "mauve",
 	["#C00AE8"] = "mauve",
-	["#F7CDCB"] = { "mix", "red", 0.24 },
-	["#FFDFDE"] = { "mix", "red", 0.16 },
-	["#FFEAE9"] = { "mix", "red", 0.12 },
+	["#F7CDCB"] = { role = "red", weight = 0.24 },
+	["#FFDFDE"] = { role = "red", weight = 0.16 },
+	["#FFEAE9"] = { role = "red", weight = 0.12 },
 	["#19000000"] = "keep",
 	["#40000000"] = "keep",
 	["#4C000000"] = "keep",
@@ -409,39 +394,64 @@ palette.LIGHT_MAP = table.freeze({
 	["#1E191919"] = "keep",
 	["#32191919"] = "keep",
 	["#00FFFFFF"] = "keep",
-	["#FFE3E3E3"] = { "mix", "surface0", 1.0 },
-	["#80B8B8B8"] = { "mix", "surface1", 1.0 },
-	["#26CCCCCC"] = { "mix", "surface1", 1.0 },
-	["#4CCCCCCC"] = { "mix", "surface1", 1.0 },
-	["#1000B06F"] = { "mix", "green", 1.0 },
-	["#2000B06F"] = { "mix", "green", 1.0 },
-	["#10FA6400"] = { "mix", "peach", 1.0 },
-	["#20FA6400"] = { "mix", "peach", 1.0 },
-	["#FF00A2FF"] = { "mix", "sapphire", 1.0 },
-	["#FF33B4FF"] = { "mix", "sky", 1.0 },
-})
-
-palette.FOUNDATION_EXTRA_DARK = table.freeze({
+	["#FFE3E3E3"] = { role = "surface0", weight = 1.0 },
+	["#80B8B8B8"] = { role = "surface1", weight = 1.0 },
+	["#26CCCCCC"] = { role = "surface1", weight = 1.0 },
+	["#4CCCCCCC"] = { role = "surface1", weight = 1.0 },
+	["#1000B06F"] = { role = "green", weight = 1.0 },
+	["#2000B06F"] = { role = "green", weight = 1.0 },
+	["#10FA6400"] = { role = "peach", weight = 1.0 },
+	["#20FA6400"] = { role = "peach", weight = 1.0 },
+	["#FF00A2FF"] = { role = "sapphire", weight = 1.0 },
+	["#FF33B4FF"] = { role = "sky", weight = 1.0 },
+}
+local FOUNDATION_EXTRA_DARK: { [string]: MapSpec } = {
 	["#D0D9FB"] = "lavender",
 	["#1B254B"] = "surface0",
-	["#0C176F"] = { "mix", "blue", 0.3 },
+	["#0C176F"] = { role = "blue", weight = 0.3 },
 	["#0A0A0E"] = "crust",
 	["#1446FF"] = "blue",
-	["#001357"] = { "mix", "blue", 0.2 },
+	["#001357"] = { role = "blue", weight = 0.2 },
 	["#B9CFFF"] = "lavender",
 	["#B8CFFF"] = "lavender",
-	["#02208D"] = { "mix", "blue", 0.35 },
-	["#00176B"] = { "mix", "blue", 0.24 },
-	["#011B79"] = { "mix", "blue", 0.27 },
-	["#027240"] = { "mix", "green", 0.45 },
-	["#01381F"] = { "mix", "green", 0.24 },
+	["#02208D"] = { role = "blue", weight = 0.35 },
+	["#00176B"] = { role = "blue", weight = 0.24 },
+	["#011B79"] = { role = "blue", weight = 0.27 },
+	["#027240"] = { role = "green", weight = 0.45 },
+	["#01381F"] = { role = "green", weight = 0.24 },
 	["#F04433"] = "red",
 	["#D91C15"] = "red",
-	["#630335"] = { "mix", "pink", 0.3 },
+	["#630335"] = { role = "pink", weight = 0.3 },
 	["#B0F6D0"] = "green",
-})
+}
 
-export type Palette = { [string]: string }
-export type MapSpec = string | { string | number }
+local palette = {
+	FLAVORS = table.freeze(FLAVORS),
+	FLAVOR_NAMES = table.freeze({
+		"latte",
+		"frappe",
+		"macchiato",
+		"mocha",
+		"dracula",
+		"nord",
+		"gruvbox",
+		"tokyo-night",
+		"rose-pine",
+	}),
+	DARK_FLAVORS = table.freeze({
+		"mocha",
+		"macchiato",
+		"frappe",
+		"dracula",
+		"nord",
+		"gruvbox",
+		"tokyo-night",
+		"rose-pine",
+	}),
+	LIGHT_FLAVORS = table.freeze({ "latte" }),
+	DARK_MAP = table.freeze(DARK_MAP),
+	LIGHT_MAP = table.freeze(LIGHT_MAP),
+	FOUNDATION_EXTRA_DARK = table.freeze(FOUNDATION_EXTRA_DARK),
+}
 
 return palette

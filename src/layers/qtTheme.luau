@@ -27,9 +27,9 @@ end
 
 function qtTheme.build(spec: string, baseDark: string, baseLight: string, themeMapper: mapper.Mapper): Built
 	local source = if mapper.isLight(spec) then baseLight else baseDark
-	local themed = string.gsub(source, '"(#%x+)"', function(hex: string): string?
+	local themed = string.gsub(source, '"(#%x+)"', function(hex: string): string
 		if #hex ~= 7 and #hex ~= 9 then
-			return
+			return `"{hex}"`
 		end
 
 		return `"{mapper.resolveQtValue(spec, hex, themeMapper)}"`

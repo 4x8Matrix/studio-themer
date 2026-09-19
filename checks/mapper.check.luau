@@ -30,7 +30,7 @@ local SAMPLES = {
 	{ 180, 90, 20 },
 }
 
-local EXPECTED = {
+local EXPECTED: { [string]: { { number } } } = {
 	mocha = {
 		{ 30, 30, 46 },
 		{ 205, 214, 244 },
@@ -380,6 +380,6 @@ local barbie = mapper.makeMapper("barbie")
 assert(mapper.resolveQtValue("barbie", "#40000000", barbie) == "#4017080F", "transform maps RGB under the alpha")
 
 local ok, message = pcall(mapper.makeMapper, "nope")
-assert(not ok and string.find(message :: string, "unknown theme spec 'nope'"), "unknown spec errors")
+assert(not ok and string.find(tostring(message), "unknown theme spec 'nope'"), "unknown spec errors")
 
 print("mapper: pass")

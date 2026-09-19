@@ -9,7 +9,7 @@ local mapper = require("../theme/mapper")
 local recolor = require("../rbxm/recolor")
 local backup = require("../studio/backup")
 
-local SKIPPED = { HotModuleReplacement = true }
+local SKIPPED: { [string]: boolean } = { HotModuleReplacement = true }
 local PLUGIN_EXTENSION = "%.rbxm$"
 
 local plugins = {}

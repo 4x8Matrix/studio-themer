@@ -25,7 +25,7 @@ local function rewriteFromRgb(module: string, output: buffer, themeMapper: mappe
 			break
 		end
 
-		init = finish + 1
+		init = (finish :: number) + 1
 
 		local base = string.byte(register0 :: string)
 		local redValue = string.byte(red :: string)
